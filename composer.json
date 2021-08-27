@@ -1,0 +1,27 @@
+{
+  "name": "rugalib/ruga-skeleton",
+  "description": "Template for rugalib components",
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/rugalib",
+  "type": "library",
+  "require": {
+    "php": "^7.4"
+  },
+  "authors": [
+    {
+      "name": "Roland Rusch",
+      "email": "roland.rusch@easy-smart.ch"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Ruga\\Skeleton\\": "src/"
+    }
+  },
+  "extra": {
+    "laminas": {
+      "component": "Ruga\\Skeleton",
+      "config-provider": "Ruga\\Skeleton\\ConfigProvider"
+    }
+  }
+}
