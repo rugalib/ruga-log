@@ -3,10 +3,11 @@
 namespace Ruga;
 
 use Laminas\Config\Config;
+use Psr\Log\AbstractLogger;
 use Ruga\Log\Severity;
 use Ruga\Log\Type;
 
-class Log
+class Log extends AbstractLogger
 {
     
     /**
@@ -46,16 +47,16 @@ class Log
     /**
      * Creates a log entry.
      *
-     * @param string|array|\Throwable                                         $msg
+     * @param string|array|\Throwable $msg
      *        Message|array($facility, $message)
-     * @param null                                                            $severity
-     * @param null                                                            $type
-     * @param string|Zend_Db_Table_Row_Abstract|Zend_Db_Table_Abstract|object $refTable
-     *        Name der Tabelle|Zeile|Tabelle|Objekt
-     * @param string|int                                                      $refId
-     *        Primärschlüssel
+     * @param null                    $severity
+     * @param null                    $type
+     * @param string|object           $refTable
+     *        Name of database table|Row|Table|Object
+     * @param string|int              $refId
+     *        Primary key
      *
-     * @return string|\Exception
+     * @return string|\Throwable
      * @throws \Exception
      */
     public static function addLog($msg, $severity = null, $type = null, $refTable = null, $refId = null)
@@ -85,9 +86,18 @@ class Log
         // if(is_object($msg)) static::log_msg('addLog(): $msg=' . get_class($msg));
         // else static::log_msg('addLog(): $msg=' . gettype($msg));
         
+        
+        if (is_string($severity)) {
+            $severity = strtoupper($severity);
+        }
+        if (is_string($type)) {
+            $type = strtoupper($type);
+        }
+        
+        
         // ARRAY
         if (is_array($msg)) {
-            list ($facility, $message) = $msg;
+            [$facility, $message] = $msg;
         } // EXCEPTION
         elseif (is_a($msg, \Exception::class)) {
             $e = $msg;
@@ -125,7 +135,7 @@ class Log
         } elseif (is_object($facility)) {
             $facility = get_class($facility);
         }
-        
+
 //        $d = [
 //            'time' => new \Laminas\Db\Sql\Expression('NOW()'),
 //            'facility' => $facility,
@@ -168,7 +178,7 @@ class Log
         if (in_array($severity, $LogMsgLogSeverity)) {
             static::log_msg($m);
         }
-        
+
 //        if (in_array($severity, $dbLogSeverity)) {
 //            try {
 //                /** @var Zend_Db_Adapter_Abstract $db */
@@ -202,9 +212,10 @@ class Log
      * @param object $obj
      * @param string $severity
      *
+     * @return string
      * @throws \Exception
      */
-    public static function functionHead($obj = null, $severity = Severity::DEBUG)
+    public static function functionHead($obj = null, $severity = Severity::DEBUG): string
     {
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2);
         $bt = $backtrace[1];
@@ -221,13 +232,9 @@ class Log
             $btArgs[] = is_scalar($arg) ? $arg : gettype($arg);
         }
         
-        static::addLog(
-            '' .
-            // . ( isset($bt['object']) ? get_class($bt['object']) : $bt['class'] )
-            $bt['class'] . $bt['type'] . $bt['function'] . '(' . implode(
-                ', ',
-                $btArgs
-            ) . ')  ' . (!isset($bt['file']) ? '' : 'called in ' . $bt['file'] . ':' . $bt['line']) . '  ',
+        return static::addLog(
+            "{$bt['class']}{$bt['type']}{$bt['function']}(" . implode(', ', $btArgs) . ")"
+            . (!isset($bt['file']) ? '' : "  called in {$bt['file']}:{$bt['line']}"),
             $severity,
             Type::STATUS,
             $obj
@@ -276,4 +283,56 @@ class Log
     
     
     
+    /**
+     * Create log message.
+     *
+     * @param       $level
+     * @param       $message
+     * @param array $context
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function log($level, $message, array $context = [])
+    {
+        $refTable=null;
+        if(array_key_exists("refTable", $context)) {
+            $refTable=$context['refTable'];
+            unset($context['refTable']);
+        }
+        
+        $refId=null;
+        if(array_key_exists("refId", $context)) {
+            $refId=$context['refId'];
+            unset($context['refId']);
+        }
+        
+        $type=null;
+        if (array_key_exists("exception", $context)) {
+            $type=Type::EXCEPTION;
+            self::addLog($message, $level, $type, $refTable, $refId);
+            $message=null;
+            $refTable=null;
+            $refId=null;
+            self::addLog($context['exception'], $level);
+            unset($context['exception']);
+        }
+        
+        
+        if (!empty($message)) {
+            self::addLog($message, $level, $type, $refTable, $refId);
+            $message=null;
+            $refTable=null;
+            $refId=null;
+        }
+        
+        if(count($context) > 0) {
+            foreach($context as $c) {
+                self::addLog($c, $level, $type, $refTable, $refId);
+                $refTable=null;
+                $refId=null;
+            }
+        }
+    
+    }
 }

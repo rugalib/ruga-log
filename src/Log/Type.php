@@ -4,11 +4,6 @@ namespace Ruga\Log;
 
 use Ruga\Std\Enum\AbstractEnum;
 
-/**
- * @method static self RESULT()
- * @method static self STATUS()
- * @method static self EXCEPTION()
- */
 class Type /*extends AbstractEnum*/
 {
     /** The message is a final result */
