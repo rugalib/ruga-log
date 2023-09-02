@@ -35,7 +35,6 @@
   "extra": {
     "laminas": {
       "component": "Ruga\\Log",
-      "config-provider": "Ruga\\Log\\ConfigProvider"
     }
   }
 }
