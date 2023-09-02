@@ -1,7 +1,7 @@
 {
   "name": "rugalib/ruga-log",
   "description": "Provides logging functionality for the ruga framework",
-  "license": "BSD-3-Clause",
+  "license": "AGPL-3.0-only",
   "homepage": "https://github.com/rugalib",
   "type": "library",
   "require": {
