@@ -34,7 +34,7 @@
   },
   "extra": {
     "laminas": {
-      "component": "Ruga\\Log",
+      "component": "Ruga\\Log"
     }
   }
 }
