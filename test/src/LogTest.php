@@ -32,10 +32,9 @@ class LogTest extends TestCase
     {
         $s = \Ruga\Log::addLog("Log message");
         $this->assertEquals("DEBUG|Log message", $s);
-    
+        
         $s = \Ruga\Log::addLog([new TestObject(), "Log message"]);
         $this->assertEquals("DEBUG|Ruga\Log\Test\TestObject: Log message", $s);
-    
     }
     
     
@@ -207,6 +206,15 @@ class LogTest extends TestCase
             "DEBUG|STATUS|Ruga\Log\Test\TestObject: Ruga\Log\Test\LogTest->testCanLogFunctionHeadWithObject()",
             substr($s, 0, 96)
         );
+    }
+    
+    
+    
+    public function testCanLogMsgAcceptsObject(): void
+    {
+        $msg = new TestObject();
+        \Ruga\Log::log_msg($msg);
+        $this->assertNull(null);
     }
     
     

@@ -32,16 +32,22 @@ class Log extends AbstractLogger
     static public function log_msg($message)
     {
         $ts = date('Y-m-d H:i:s');
+        try {
+            $message=strval($message);
+        } catch (\Throwable $e) {
+            $message=print_r($message, true);
+        }
+        $message=str_replace("\r\n", "\n", $message);
+        $message=str_replace("\n\r", "\n", $message);
+        $message=str_replace("\r", "\n", $message);
         $lines = explode("\n", $message);
         foreach ($lines as $lstr) {
-            $lstr = trim($lstr);
+//            $lstr = trim($lstr);
             if (empty($lstr)) {
                 continue;
             }
             if (php_sapi_name() == 'cli') {
                 error_log("{$ts} {$lstr}", 4);
-// 				error_log("{$ts} {$lstr}", 3, "php://stderr");
-// 				file_put_contents("php://stderr", "{$ts} {$lstr}");
             } else {
                 error_log("{$ts} {$lstr}", 0);
             }
